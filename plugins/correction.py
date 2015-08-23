@@ -14,14 +14,14 @@ def correction(match, conn, chan, message):
     :type conn: cloudbot.client.Client
     :type chan: str
     """
-    if chan not in conn.history:
-        #Bot has not recorded any history for the channel yet.
-        #No need to evaluate or throw an exception.
-        return
-    
     groups = [b.replace("\/", "/") for b in re.split(r"(?<!\\)/", match.groups()[0])]
     find_regex = groups[0]
     replace = groups[1]
+
+    if chan not in conn.history:
+        # Bot has not recorded any history for the channel yet.
+        # No need to evaluate or throw an exception.
+        return
 
     for item in conn.history[chan].__reversed__():
         nick, timestamp, msg = item
@@ -30,22 +30,22 @@ def correction(match, conn, chan, message):
             continue
         try:
             if re.search(find_regex, msg) is not None:
-                #Remove if there
+                # Remove if there
                 if "\x01ACTION" in msg:
                     msg = msg.replace("\x01ACTION", "").replace("\x01", "")
 
-                #Send bolded correction
-                mod_msg = re.sub(find_regex, "\x02" + replace + "\x02", msg) #ireplace(msg, find_regex, "\x02" + replace + "\x02")
+                # Send bolded correction
+                mod_msg = re.sub(find_regex, "\x02" + replace + "\x02", msg)
                 message("Correction, <{}> {}".format(nick, mod_msg))
 
-                #Add correction to the history
+                # Add correction to the history
                 msg = re.sub(find_regex, replace, msg)
                 conn.history[chan].append((nick, timestamp, msg))
                 return
             else:
                 continue
         except IndexError:
-            #There was an invalid backreference in the replace string.
-            #Treat as if no matches were found by returning.
-            #The replace will never happen, anyway.
+            # There was an invalid backreference in the replace string.
+            # Treat as if no matches were found by returning.
+            # The replace will never happen, anyway.
             return
