@@ -14,6 +14,11 @@ def correction(match, conn, chan, message):
     :type conn: cloudbot.client.Client
     :type chan: str
     """
+    if chan not in conn.history:
+        #Bot has not recorded any history for the channel yet.
+        #No need to evaluate or throw an exception.
+        return
+    
     groups = [b.replace("\/", "/") for b in re.split(r"(?<!\\)/", match.groups()[0])]
     find_regex = groups[0]
     replace = groups[1]
