@@ -19,7 +19,6 @@ def correction(match, conn, chan, message):
     replace = groups[1]
 
     for item in conn.history[chan].__reversed__():
-        print(conn.history)
         nick, timestamp, msg = item
         if correction_re.match(msg):
             # don't correct corrections, it gets really confusing
