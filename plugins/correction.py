@@ -45,5 +45,7 @@ def correction(match, conn, chan, message):
             else:
                 continue
         except IndexError:
-            #There was an invalid backreference in the replace string. Treat as if no matches were found.
-            continue
+            #There was an invalid backreference in the replace string.
+            #Treat as if no matches were found by returning.
+            #The replace will never happen, anyway.
+            return
