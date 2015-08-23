@@ -15,26 +15,31 @@ def correction(match, conn, chan, message):
     :type chan: str
     """
     groups = [b.replace("\/", "/") for b in re.split(r"(?<!\\)/", match.groups()[0])]
-    find = groups[0]
+    find_regex = groups[0]
     replace = groups[1]
 
     for item in conn.history[chan].__reversed__():
+        print(conn.history)
         nick, timestamp, msg = item
         if correction_re.match(msg):
             # don't correct corrections, it gets really confusing
             continue
+        try:
+            if re.search(find_regex, msg) is not None:
+                #Remove if there
+                if "\x01ACTION" in msg:
+                    msg = msg.replace("\x01ACTION", "").replace("\x01", "")
 
-        if find.lower() in msg.lower():
-            if "\x01ACTION" in msg:
-                msg = msg.replace("\x01ACTION", "").replace("\x01", "")
-                mod_msg = ireplace(msg, find, "\x02" + replace + "\x02")
-                message("Correction, * {} {}".format(nick, mod_msg))
-            else:
-                mod_msg = ireplace(msg, find, "\x02" + replace + "\x02")
+                #Send bolded correction
+                mod_msg = re.sub(find_regex, "\x02" + replace + "\x02", msg) #ireplace(msg, find_regex, "\x02" + replace + "\x02")
                 message("Correction, <{}> {}".format(nick, mod_msg))
 
-            msg = ireplace(msg, find, replace)
-            conn.history[chan].append((nick, timestamp, msg))
-            return
-        else:
+                #Add correction to the history
+                msg = re.sub(find_regex, replace, msg)
+                conn.history[chan].append((nick, timestamp, msg))
+                return
+            else:
+                continue
+        except IndexError:
+            #There was an invalid backreference in the replace string. Treat as if no matches were found.
             continue
